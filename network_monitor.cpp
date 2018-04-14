@@ -12,7 +12,8 @@ void NetworkMonitor::dispatch() {
 
 		this->linkType = pcap_datalink(this->handle);
 
-		int err = pthread_create(&this->ptid, NULL, loop, this);
+		int err1 = pthread_create(&this->fetch_package_thread, NULL, fetch_package, this);
+		int err2 = pthread_create(&this->calc_speed_thread, NULL, calc_speed, this);
 
 	}
 
@@ -66,6 +67,7 @@ double NetworkMonitor::getProcessBandwidth(int pid)
 }
 
 
+/*
 void* NetworkMonitor::wakeUp(void *arg){
 	pthread_detach(pthread_self());
 	NetworkMonitor *app = (NetworkMonitor*)arg;
@@ -118,7 +120,56 @@ void* NetworkMonitor::loop(void *arg){
 		app->refreshConnection();
 	}
 }
+*/
 
+void* NetworkMonitor::calc_speed(void* arg)
+{
+	pthread_detach(pthread_self());
+	NetworkMonitor* This = (NetworkMonitor*)arg;
+
+    timeval last, now;
+	gettimeofday(&last, NULL);
+
+	while (true)
+	{
+		sleep(This->time);
+
+		pthread_mutex_lock(&This->pmutex);
+
+        gettimeofday(&now, NULL);
+		double sec = now.tv_sec - last.tv_sec;
+		sec += ((double)(now.tv_usec - last.tv_usec)) / 1000000;
+		last = now;
+
+		for (int i = 0; i < This->processs.size(); i++)
+		{   Process* p = This->processs[i];
+		    p->sudu = p->len / sec / 1000;
+			p->len = 0;
+			p->refershInodes();
+			//if  (now->inodes == NULL)
+			    //This->res.push_back(now->pid);
+		}
+        
+		pthread_mutex_unlock(&This->pmutex);
+
+		//for (int i = 0; i < This->res.size(); i++)
+		    //This->removeProcess(This->res[i]);
+		
+		This->refreshConnection();
+        
+	}
+
+
+
+}
+
+void* NetworkMonitor::fetch_package(void* arg)
+{
+	pthread_detach(pthread_self());
+	NetworkMonitor* This = (NetworkMonitor*)arg;
+
+    pcap_loop(This->handle, -1, processCallBack, (u_char*)This);
+}
 
 void NetworkMonitor::processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet){
 	NetworkMonitor *app = (NetworkMonitor*)userData;

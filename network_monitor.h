@@ -83,9 +83,9 @@ public:
 
 	void dispatch();
 
-	static void* wakeUp(void *arg);
+	static void* calc_speed(void *arg);
 
-	static void* loop(void *arg);
+	static void* fetch_package(void *arg);
 
 	static void processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet);
 
@@ -107,7 +107,7 @@ public:
 	pcap_t *handle;
 	int linkType;
 	dpargs info;
-	pthread_t ptid;
+	pthread_t fetch_package_thread, calc_speed_thread;
 	long pid;
 	std::vector<Process*> processs;
 	std::vector<int> res;
