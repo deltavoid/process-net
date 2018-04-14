@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     sscanf(argv[1], "%d", &pid);
     printf("pid: %d\n", pid);
 
-    network_monitor = new NetworkMonitor(1);
+    network_monitor = new NetworkMonitor("enp179s0f1", 1);
     network_monitor->addProcess(pid);
 
     for (int i = 0; i < 10; i++)

@@ -57,10 +57,10 @@
 
 class NetworkMonitor{
 public:
-	NetworkMonitor(int time) {
+	NetworkMonitor(const char* dev, int time) {
+        this->device = dev;
+        this->time = time;
 		this->con = new Connection();
-		this->time = time;
-		this->len = 0;
 		pthread_mutex_init(&pmutex, NULL);
 
 		dispatch(); //init
@@ -102,13 +102,13 @@ public:
 
 	void dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet);
 
-	pcap_t *handle;
 	int time;
+	std::string device;
+	pcap_t *handle;
 	int linkType;
 	dpargs info;
 	pthread_t ptid;
 	long pid;
-	int len;
 	std::vector<Process*> processs;
 	std::vector<int> res;
 	pthread_mutex_t pmutex;

@@ -6,9 +6,9 @@
 void NetworkMonitor::dispatch() {
 		char errbuff[PCAP_ERRBUF_SIZE];
 		//char *dev = pcap_lookupdev(errbuff);
-		const char* dev = "enp179s0f1";
+		//const char* dev = "enp179s0f1";
 		
-		this->handle = pcap_open_live(dev, BUFSIZ, 0, 1000, errbuff);
+		this->handle = pcap_open_live(device.c_str(), BUFSIZ, 0, 1000, errbuff);
 
 		this->linkType = pcap_datalink(this->handle);
 
@@ -205,10 +205,6 @@ void NetworkMonitor::dp_parse_tcp (const pcap_pkthdr * header, const u_char * pa
 			}
 		}
 		pthread_mutex_unlock(&pmutex);
-		/*
-		if (this->process->hasInode(inode)) {
-			this->len += header->len;
-		}*/
 }
 
 

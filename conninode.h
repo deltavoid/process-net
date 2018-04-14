@@ -26,7 +26,7 @@ public:
 		delete this->conninode;
 	}
 
-	unsigned long getConnectionInode(in_addr ip_src, unsigned short port_src, in_addr ip_dst, unsigned short port_dst){
+	unsigned long getConnectionInode(in_addr ip_src, unsigned short port_src, in_addr ip_dst, unsigned short port_dst){  //interface
 		char *hashString1 = (char*)malloc(92);
 		char *hashString2 = (char*)malloc(92);
 

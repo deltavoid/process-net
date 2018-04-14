@@ -76,7 +76,7 @@ public:
 	}
 
 
-	bool hasInode(long inode) {
+	bool hasInode(long inode) {  //interface
 		std::set<long>::iterator it;
 		it = this->inodes->find(inode);
 		if (it == this->inodes->end()) {
