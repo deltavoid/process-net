@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     network_monitor = new NetworkMonitor("ens33", 1);
     network_monitor->addProcess(pid);
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
         printf("%lf\n", network_monitor->getProcessBandwidth(pid));
         sleep(1);

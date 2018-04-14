@@ -139,6 +139,7 @@ void* NetworkMonitor::calc_speed(void* arg)
         gettimeofday(&now, NULL);
 		double sec = now.tv_sec - last.tv_sec;
 		sec += ((double)(now.tv_usec - last.tv_usec)) / 1000000;
+		std::cout << "sec: " << sec << std::endl;
 		last = now;
 
 		for (int i = 0; i < This->processs.size(); i++)
@@ -159,6 +160,7 @@ void* NetworkMonitor::calc_speed(void* arg)
         
 	}
 
+	std::cout << "calc_speed finsish" <<std::endl;
 
 
 }
@@ -169,6 +171,8 @@ void* NetworkMonitor::fetch_package(void* arg)
 	NetworkMonitor* This = (NetworkMonitor*)arg;
 
     pcap_loop(This->handle, -1, processCallBack, (u_char*)This);
+
+	std::cout << "fetch_package finish" << std::endl;
 }
 
 void NetworkMonitor::processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet){
