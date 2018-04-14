@@ -1,6 +1,6 @@
 
 
-app = new App(10);
+app = new NetworkMonitor(10);
 app->dispatch();
 
 out = now->sudu;  /*interface*/

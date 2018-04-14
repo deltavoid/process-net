@@ -1,5 +1,5 @@
-#ifndef __APP_H
-#define __APP_H
+#ifndef __NETWORK_MONITOR_H
+#define __NETWORK_MONITOR_H
 #include <iostream>
 #include <map>
 #include <set>
@@ -55,9 +55,9 @@
 
 
 
-class App{
+class NetworkMonitor{
 public:
-	App(int time) {
+	NetworkMonitor(int time) {
 		this->con = new Connection();
 		this->time = time;
 		this->len = 0;
@@ -66,7 +66,7 @@ public:
 		dispatch(); //init
 	}
 
-	~App() {
+	~NetworkMonitor() {
 		size_t size = this->processs.size();
 		for (int i = 0; i< size; i++) {
 			Process *now = this->processs[i];

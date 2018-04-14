@@ -1,9 +1,9 @@
 
-#include "app.h"
+#include "network_monitor.h"
 
 
 
-void App::dispatch() {
+void NetworkMonitor::dispatch() {
 		char errbuff[PCAP_ERRBUF_SIZE];
 		char *dev = pcap_lookupdev(errbuff);
 		
@@ -15,7 +15,7 @@ void App::dispatch() {
 
 	}
 
-void App::addProcess(int pid) {
+void NetworkMonitor::addProcess(int pid) {
 	pthread_mutex_lock(&pmutex);
 		size_t size = this->processs.size();
 		for (int i = 0; i< size; i++) {
@@ -28,7 +28,7 @@ void App::addProcess(int pid) {
 	pthread_mutex_unlock(&pmutex);
 }
 
-void App::removeProcess(int pid) {
+void NetworkMonitor::removeProcess(int pid) {
 	pthread_mutex_lock(&pmutex);
 		std::vector<Process*>::iterator it = this->processs.begin();
 		while (it != this->processs.end()) {
@@ -44,7 +44,7 @@ void App::removeProcess(int pid) {
 	pthread_mutex_unlock(&pmutex);
 }
 
-double App::getProcessBandwidth(int pid)
+double NetworkMonitor::getProcessBandwidth(int pid)
 {
 	pthread_mutex_lock(&pmutex);
 	double out = -1;
@@ -61,17 +61,17 @@ double App::getProcessBandwidth(int pid)
 }
 
 
-void* App::wakeUp(void *arg){
+void* NetworkMonitor::wakeUp(void *arg){
 	pthread_detach(pthread_self());
-	App *app = (App*)arg;
+	NetworkMonitor *app = (NetworkMonitor*)arg;
 	sleep(app->time);
 	pcap_breakloop(app->handle);
 	return ((void*)0);
 }
 
 
-void* App::loop(void *arg){
-	App *app = (App*)arg;
+void* NetworkMonitor::loop(void *arg){
+	NetworkMonitor *app = (NetworkMonitor*)arg;
 	timeval begin, end;
 	pthread_t ptid;
 	while (true) {
@@ -115,8 +115,8 @@ void* App::loop(void *arg){
 }
 
 
-void App::processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet){
-	App *app = (App*)userData;
+void NetworkMonitor::processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet){
+	NetworkMonitor *app = (NetworkMonitor*)userData;
 
 	switch (app->linkType) {
 		case (DLT_EN10MB):
@@ -141,7 +141,7 @@ void App::processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_
 }
 
 
-void App::dp_parse_ethernet (const pcap_pkthdr * header, const u_char * packet){
+void NetworkMonitor::dp_parse_ethernet (const pcap_pkthdr * header, const u_char * packet){
 		const struct ether_header * ethernet = (struct ether_header *)packet;
 		u_char * payload = (u_char *) packet + sizeof (struct ether_header);
 
@@ -161,7 +161,7 @@ void App::dp_parse_ethernet (const pcap_pkthdr * header, const u_char * packet){
 		}
 }
 
-void App::dp_parse_ip (const pcap_pkthdr * header, const u_char * packet){
+void NetworkMonitor::dp_parse_ip (const pcap_pkthdr * header, const u_char * packet){
 		const struct ip * ip = (struct ip *) packet;
 
 		this->info.sa_family = AF_INET;
@@ -180,7 +180,7 @@ void App::dp_parse_ip (const pcap_pkthdr * header, const u_char * packet){
 		}
 }
 
-void App::dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet){
+void NetworkMonitor::dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet){
 		struct tcphdr * tcp = (struct tcphdr *) packet;
 
 		unsigned long inode = this->con->getConnectionInode(this->info.ip_src, ntohs(tcp->source), this->info.ip_dst, ntohs(tcp->dest));
@@ -202,84 +202,5 @@ void App::dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet){
 
 
 
-
-
-
-
-double doProcess(int pid, int time){
-
-/*
-	timeval begin, end;
-	gettimeofday(&begin, NULL);
-
-	App app(pid, time);
-	app.dispatch();
-	int len = app.len;
-
-	gettimeofday(&end, NULL);
-
-	double sec = end.tv_sec - begin.tv_sec;
-	sec += ((double)(end.tv_usec - begin.tv_usec)) / 1000000;
-	double all = (double)len;
-
-	double su = all / sec / 1000;
-
-
-	printf("%.2f KB/S\n", su);
-	return su;*/
-	return 0;
-}
-
-
-/*
-int main(){
-	timeval begin, end;
-	gettimeofday(&begin, NULL);
-
-	App app(7140, 10);
-	app.dispatch();
-	int len = app.len;
-
-	gettimeofday(&end, NULL);
-
-	double sec = end.tv_sec - begin.tv_sec;
-	sec += ((double)(end.tv_usec - begin.tv_usec)) / 1000000;
-	double all = (double)len;
-
-	double su = all / sec / 1000;
-
-	printf("%.2f KB/S\n", su);
-
-	return 0;
-	
-	Process p(7140);
-	if (p.hasInode(23045)) {
-		printf("you de \n");
-	} else {
-		printf("meiyou \n");
-	}
-	
-	cons = new Connection();
-
-	char errbuff[PCAP_ERRBUF_SIZE];
-	char *dev = pcap_lookupdev(errbuff);
-	handle = pcap_open_live(dev, BUFSIZ, 0, 1000, errbuff);
-
-	linkType = pcap_datalink(handle);
-	int err = pthread_create(&ptid, NULL, doIt, NULL);
-	pcap_loop(handle, -1, pcap_callBack, NULL);
-
-
-	delete cons;
-	printf("main\n");
-
-
-	std::map <std::string, unsigned long> *conninode = refreshconninode();
-	for (std::map <std::string, unsigned long>::iterator it = conninode->begin(); it != conninode->end(); it++) {
-		std::cout<<it->first<<" :  "<<it->second<<"\n";
-	}
-
-
-}*/
 
 
