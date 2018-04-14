@@ -108,7 +108,7 @@ public:
 
 
 	double sudu = 0;
-	int len = 0;
+	double len = 0;
 	int pid;
 	std::set<long>* inodes = NULL;
 

@@ -5,7 +5,8 @@
 
 void NetworkMonitor::dispatch() {
 		char errbuff[PCAP_ERRBUF_SIZE];
-		char *dev = pcap_lookupdev(errbuff);
+		//char *dev = pcap_lookupdev(errbuff);
+		const char* dev = "enp179s0f1";
 		
 		this->handle = pcap_open_live(dev, BUFSIZ, 0, 1000, errbuff);
 
@@ -25,6 +26,10 @@ void NetworkMonitor::addProcess(int pid) {
 			}
 		}
 		this->processs.push_back(new Process(pid));
+
+	for (int i = 0; i < this->processs.size(); i++)
+	    std::cout << this->processs[i]->pid << std::endl;
+
 	pthread_mutex_unlock(&pmutex);
 }
 
@@ -184,12 +189,18 @@ void NetworkMonitor::dp_parse_tcp (const pcap_pkthdr * header, const u_char * pa
 		struct tcphdr * tcp = (struct tcphdr *) packet;
 
 		unsigned long inode = this->con->getConnectionInode(this->info.ip_src, ntohs(tcp->source), this->info.ip_dst, ntohs(tcp->dest));
+		//std::cout << "inode: " << inode << std::endl;
 		pthread_mutex_lock(&pmutex);
 		size_t size = this->processs.size();
 		for (int i = 0; i< size; i++) {
 			Process *now = this->processs[i];
+
 			if (now->hasInode(inode)) {
+				
 				now->len += header->len;
+                //std::cout << "pid: " << now->pid << std::endl;
+				//std::cout << "inode: " << inode << std::endl;
+				//std::cout << "len: " << now->len << std::endl;
 				break;
 			}
 		}
