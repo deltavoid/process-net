@@ -3,9 +3,65 @@
 
 
 
-pthread_mutex_t pmutex = PTHREAD_MUTEX_INITIALIZER;
+void App::dispatch() {
+		char errbuff[PCAP_ERRBUF_SIZE];
+		char *dev = pcap_lookupdev(errbuff);
+		
+		this->handle = pcap_open_live(dev, BUFSIZ, 0, 1000, errbuff);
 
-void* wakeUp(void *arg){
+		this->linkType = pcap_datalink(this->handle);
+
+		int err = pthread_create(&this->ptid, NULL, loop, this);
+
+	}
+
+void App::addProcess(int pid) {
+	pthread_mutex_lock(&pmutex);
+		size_t size = this->processs.size();
+		for (int i = 0; i< size; i++) {
+			Process *now = this->processs[i];
+			if (now->pid == pid) {
+				return;
+			}
+		}
+		this->processs.push_back(new Process(pid));
+	pthread_mutex_unlock(&pmutex);
+}
+
+void App::removeProcess(int pid) {
+	pthread_mutex_lock(&pmutex);
+		std::vector<Process*>::iterator it = this->processs.begin();
+		while (it != this->processs.end()) {
+			Process *pro = *it;
+			if (pro->pid == pid) {
+				it = this->processs.erase(it);
+				delete pro;
+				break;
+			} else {
+				it++;
+			}
+		}
+	pthread_mutex_unlock(&pmutex);
+}
+
+double App::getProcessBandwidth(int pid)
+{
+	pthread_mutex_lock(&pmutex);
+	double out = -1;
+	size_t size = this->processs.size();
+    for (int i = 0; i< size; i++) {
+        Process *now = this->processs[i];
+        if (now->pid == pid) {
+            out = now->sudu;
+            break;
+        }
+    }
+	pthread_mutex_unlock(&pmutex);
+	return out;
+}
+
+
+void* App::wakeUp(void *arg){
 	pthread_detach(pthread_self());
 	App *app = (App*)arg;
 	sleep(app->time);
@@ -14,9 +70,7 @@ void* wakeUp(void *arg){
 }
 
 
-std::vector<int> res;
-
-void* loop(void *arg){
+void* App::loop(void *arg){
 	App *app = (App*)arg;
 	timeval begin, end;
 	pthread_t ptid;
@@ -36,7 +90,7 @@ void* loop(void *arg){
 		sec += ((double)(end.tv_usec - begin.tv_usec)) / 1000000;
 
 
-		pthread_mutex_lock(&pmutex);
+		pthread_mutex_lock(&app->pmutex);
 		for (int i = 0; i < size; i++) {
 			Process *now = app->processs[i];
 			double all = (double)now->len;
@@ -45,23 +99,23 @@ void* loop(void *arg){
 			now->sudu = su;
 			now->refershInodes();
 			if (now->inodes == NULL) {
-				res.push_back(now->pid);
+				app->res.push_back(now->pid);
 			}
 		}
-		pthread_mutex_unlock(&pmutex);
+		pthread_mutex_unlock(&app->pmutex);
 
 
-		for (int i = 0; i < res.size(); i++) {
-			int pid = res[i];
+		for (int i = 0; i < app->res.size(); i++) {
+			int pid = app->res[i];
 			app->removeProcess(pid);
 		}
-		res.clear();
+		app->res.clear();
 		app->refreshConnection();
 	}
 }
 
 
-void processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet){
+void App::processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char *packet){
 	App *app = (App*)userData;
 
 	switch (app->linkType) {
@@ -85,6 +139,72 @@ void processCallBack(u_char *userData, const  pcap_pkthdr *header, const u_char 
 			break;
 	}
 }
+
+
+void App::dp_parse_ethernet (const pcap_pkthdr * header, const u_char * packet){
+		const struct ether_header * ethernet = (struct ether_header *)packet;
+		u_char * payload = (u_char *) packet + sizeof (struct ether_header);
+
+
+		/* parse payload */
+		switch (ethernet->ether_type)
+		{
+			case (0x0008):
+				this->dp_parse_ip (header, payload);
+				break;
+			case (0xDD86):
+				//dp_parse_ip6 (handle, header, payload);
+				break;
+			default:
+				// TODO: maybe support for other protocols apart from IPv4 and IPv6 
+				break;
+		}
+}
+
+void App::dp_parse_ip (const pcap_pkthdr * header, const u_char * packet){
+		const struct ip * ip = (struct ip *) packet;
+
+		this->info.sa_family = AF_INET;
+		this->info.ip_src = ip->ip_src;
+		this->info.ip_dst = ip->ip_dst;
+
+		u_char * payload = (u_char *) packet + sizeof (struct ip);
+		switch (ip->ip_p)
+		{
+			case (6):
+				this->dp_parse_tcp (header, payload);
+				break;
+			default:
+				// TODO: maybe support for non-tcp IP packets
+				break;
+		}
+}
+
+void App::dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet){
+		struct tcphdr * tcp = (struct tcphdr *) packet;
+
+		unsigned long inode = this->con->getConnectionInode(this->info.ip_src, ntohs(tcp->source), this->info.ip_dst, ntohs(tcp->dest));
+		pthread_mutex_lock(&pmutex);
+		size_t size = this->processs.size();
+		for (int i = 0; i< size; i++) {
+			Process *now = this->processs[i];
+			if (now->hasInode(inode)) {
+				now->len += header->len;
+				break;
+			}
+		}
+		pthread_mutex_unlock(&pmutex);
+		/*
+		if (this->process->hasInode(inode)) {
+			this->len += header->len;
+		}*/
+}
+
+
+
+
+
+
 
 double doProcess(int pid, int time){
 

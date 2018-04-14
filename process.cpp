@@ -1,7 +1,7 @@
 #include "process.h"
 
 
-bool is_number (char * string) {
+bool Process::is_number (char * string) {
 	while (*string) {
 		if (!isdigit (*string))
 			return false;
@@ -10,7 +10,7 @@ bool is_number (char * string) {
 	return true;
 }
 
-unsigned long str2ulong (char * ptr) {
+unsigned long Process::str2ulong (char * ptr) {
 	unsigned long retval = 0;
 
 	while ((*ptr >= '0') && (*ptr <= '9')) {
@@ -20,7 +20,7 @@ unsigned long str2ulong (char * ptr) {
 	}
 	return retval;
 }
-int str2int (char * ptr) {
+int Process::str2int (char * ptr) {
 	int retval = 0;
 
 	while ((*ptr >= '0') && (*ptr <= '9')) {
@@ -36,7 +36,7 @@ int str2int (char * ptr) {
 
 
 
-std::set<long>* getProcessSocketInode(long pid) {
+std::set<long>* Process::getProcessSocketInode(long pid) {
 	std::set<long>* v = new std::set<long>();
 	char temp[50];
 	memset(temp, 0, 50);
@@ -48,7 +48,7 @@ std::set<long>* getProcessSocketInode(long pid) {
 	int isExist = access(dirname, F_OK);
 	if (isExist == -1) {
 		free(dirname);
-		printf("process do not exist, pid is : %d\n", pid);
+		printf("process do not exist, pid is : %d\n", (int)pid);
 		return NULL;
 	}
 

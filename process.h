@@ -7,8 +7,6 @@
 #include <iostream>
 
 
-
-
 #include <pthread.h>
 
 #include <net/ethernet.h>
@@ -101,19 +99,20 @@ public:
 		this->inodes = getProcessSocketInode(this->pid);
 	}
 
+
+	std::set<long>* getProcessSocketInode(long pid);
+    bool is_number (char * string);
+    unsigned long str2ulong (char * ptr);
+	int str2int (char * ptr);
+
+
+
 	double sudu = 0;
 	int len = 0;
 	int pid;
 	std::set<long>* inodes = NULL;
-	
-	
 
-	
 };
-
-
-
-
 
 
 #endif

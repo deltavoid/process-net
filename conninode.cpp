@@ -13,7 +13,7 @@
  *      2: 0000000000000000FFFF0000020310AC:0016 0000000000000000FFFF00009DD8A9C3:A526 01 00000000:00000000 02:000A7214 00000000     0        0 2525 2 c732eca0 201 40 1 2 -1
  *
  */
-void addtoconninode (char * buffer, std::map <std::string, unsigned long>* conninode)
+void Connection::addtoconninode (char * buffer, std::map <std::string, unsigned long>* conninode)
 {
 	short int sa_family;
     	struct in6_addr result_addr_local;
@@ -107,7 +107,7 @@ void addtoconninode (char * buffer, std::map <std::string, unsigned long>* conni
 }
 
 /* opens /proc/net/tcp[6] and adds its contents line by line */
-int addprocinfo (const char * filename, std::map <std::string, unsigned long>* conninode) {
+int Connection::addprocinfo (const char * filename, std::map <std::string, unsigned long>* conninode) {
 	FILE * procinfo = fopen (filename, "r");
 
 	char buffer[8192];
@@ -131,7 +131,7 @@ int addprocinfo (const char * filename, std::map <std::string, unsigned long>* c
 
 
 
-std::map <std::string, unsigned long>* refreshconninode ()
+std::map <std::string, unsigned long>* Connection::refreshconninode ()
 {
 	/* we don't forget old mappings, just overwrite */
 	//delete conninode;

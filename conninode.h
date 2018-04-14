@@ -4,9 +4,9 @@
 #ifndef __CONNINODE_H
 #define __CONNINODE_H
 
-#define HASHKEYSIZE 92
 
-std::map <std::string, unsigned long>* refreshconninode ();
+
+
 
 
 
@@ -26,7 +26,7 @@ public:
 		delete this->conninode;
 	}
 
-	unsigned long getConnectionInoe(in_addr ip_src, unsigned short port_src, in_addr ip_dst, unsigned short port_dst){
+	unsigned long getConnectionInode(in_addr ip_src, unsigned short port_src, in_addr ip_dst, unsigned short port_dst){
 		char *hashString1 = (char*)malloc(92);
 		char *hashString2 = (char*)malloc(92);
 
@@ -62,8 +62,12 @@ public:
 
 	}
 
-private:
+    static void addtoconninode (char * buffer, std::map <std::string, unsigned long>* conninode);
+    static int addprocinfo (const char * filename, std::map <std::string, unsigned long>* conninode);
+	static std::map <std::string, unsigned long>* refreshconninode ();
+
 	std::map <std::string, unsigned long> *conninode;
+	static const int HASHKEYSIZE = 92;
 };
 
 
