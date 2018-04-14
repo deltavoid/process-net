@@ -1,0 +1,8 @@
+
+
+app = new App(10);
+app->dispatch();
+
+out = now->sudu;  /*interface*/
+app->removeProcess(pid);  /*interface*/
+app->addProcess(pro);  /*interface*/
