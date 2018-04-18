@@ -57,29 +57,9 @@
 
 class NetworkMonitor{
 public:
-	NetworkMonitor(const char* dev, int time) {
-        this->device = dev;
-        this->time = time;
-		this->con = new Connection();
-		pthread_mutex_init(&pmutex, NULL);
-
-		dispatch(); //init
-	}
-
-	~NetworkMonitor() {
-		size_t size = this->processs.size();
-		for (int i = 0; i< size; i++) {
-			Process *now = this->processs[i];
-			delete now;
-		}
-		delete this->con;
-	}
-
-	void refreshConnection() {
-		delete this->con;
-		this->con = new Connection();
-	}
-
+	NetworkMonitor(const char* dev, int time);
+	~NetworkMonitor();
+	void refreshConnection();
 
 	void dispatch();
 

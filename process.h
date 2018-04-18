@@ -67,50 +67,20 @@ struct dpargs {
 
 class Process{
 public:
-	Process(int pid) {
-		this->pid = pid;
-		this->inodes = getProcessSocketInode(this->pid);
-	}
-	~Process() {
-		delete this->inodes;
-	}
-
-
-	bool hasInode(long inode) {  //interface
-		std::set<long>::iterator it;
-		it = this->inodes->find(inode);
-		if (it == this->inodes->end()) {
-			return false;;
-		} else {
-			return true;
-		}
-	}
-	void refershInodes() {
-		if (this->inodes != NULL) {
-			std::set<long>::iterator it = this->inodes->begin();
-			while (it != this->inodes->end()) {
-				this->inodes->erase(it);
-				it++;
-			}
-			this->inodes->clear();
-			delete this->inodes;
-			this->inodes = NULL;
-		}
-		this->inodes = getProcessSocketInode(this->pid);
-	}
-
+	Process(int pid);
+	~Process();
+	bool hasInode(long inode);
+	void refershInodes();
 
 	static std::set<long>* getProcessSocketInode(long pid);
     static bool is_number (char * string);
-    static unsigned long str2ulong (char * ptr);
-	static int str2int (char * ptr);
+    static unsigned long str2ulong (char* ptr);
+	static int str2int (char* ptr);
 
-
-
-	double sudu = 0;
-	double len = 0;
 	int pid;
 	std::set<long>* inodes = NULL;
+    double len = 0;
+    double sudu = 0;
 
 };
 

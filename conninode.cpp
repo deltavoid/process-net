@@ -2,6 +2,65 @@
 
 
 
+Connection::Connection(){
+		this->conninode = getRefreshConnInode();
+}
+
+Connection::~Connection(){
+		std::map <std::string, unsigned long>::iterator it = this->conninode->begin();
+		while (it != this->conninode->end()) {
+			this->conninode->erase(it);
+			it++;
+		}
+		this->conninode->clear();
+		delete this->conninode;
+}
+
+
+
+
+long Connection::getConnectionInode(in_addr ip_src, unsigned short port_src, in_addr ip_dst, unsigned short port_dst){  //interface
+		char *hashString1 = (char*)malloc(92);
+		char *hashString2 = (char*)malloc(92);
+
+		char *local_string = (char*)malloc(50);
+		char *remote_string = (char*)malloc(50);
+
+		inet_ntop(AF_INET, &ip_src, local_string, 49);
+		inet_ntop(AF_INET, &ip_dst, remote_string, 49);
+
+		snprintf(hashString1, HASHKEYSIZE, "%s:%d-%s:%d", local_string, port_src, remote_string, port_dst);
+		snprintf(hashString2, HASHKEYSIZE, "%s:%d-%s:%d", remote_string, port_dst, local_string, port_src);
+
+
+		int out = -1;
+		
+		std::map <std::string, unsigned long>::iterator it = this->conninode->find(hashString1);
+		if (it != this->conninode->end()) {
+			//printf("to out, inode is %d\n", it->second);
+			out = it->second;
+		} 
+		it = this->conninode->find(hashString2);
+		if (it != this->conninode->end()) {
+			//printf("come in, inode is %d\n", it->second);
+			out = it->second;
+		} 
+		free(hashString1);
+		free(hashString2);
+		free(local_string);
+		free(remote_string);
+		
+
+		return out;
+}
+
+void Connection::refreshConnectionInode()
+{
+	this->conninode = getRefreshConnInode();
+}
+
+
+
 
 /*
  * parses a /proc/net/tcp-line of the form:
@@ -13,7 +72,7 @@
  *      2: 0000000000000000FFFF0000020310AC:0016 0000000000000000FFFF00009DD8A9C3:A526 01 00000000:00000000 02:000A7214 00000000     0        0 2525 2 c732eca0 201 40 1 2 -1
  *
  */
-void Connection::addtoconninode (char * buffer, std::map <std::string, unsigned long>* conninode)
+void Connection::addToConnInode (char * buffer, std::map <std::string, unsigned long>* conninode)
 {
 	short int sa_family;
     	struct in6_addr result_addr_local;
@@ -107,7 +166,7 @@ void Connection::addtoconninode (char * buffer, std::map <std::string, unsigned 
 }
 
 /* opens /proc/net/tcp[6] and adds its contents line by line */
-int Connection::addprocinfo (const char * filename, std::map <std::string, unsigned long>* conninode) {
+int Connection::addProcInfo (const char * filename, std::map <std::string, unsigned long>* conninode) {
 	FILE * procinfo = fopen (filename, "r");
 
 	char buffer[8192];
@@ -120,7 +179,7 @@ int Connection::addprocinfo (const char * filename, std::map <std::string, unsig
 	do
 	{
 		if (fgets(buffer, sizeof(buffer), procinfo))
-			addtoconninode(buffer, conninode);
+			addToConnInode(buffer, conninode);
 	} while (!feof(procinfo));
 
 	fclose(procinfo);
@@ -131,19 +190,19 @@ int Connection::addprocinfo (const char * filename, std::map <std::string, unsig
 
 
 
-std::map <std::string, unsigned long>* Connection::refreshconninode ()
+std::map <std::string, unsigned long>* Connection::getRefreshConnInode ()
 {
 	/* we don't forget old mappings, just overwrite */
 	//delete conninode;
 	//conninode = new HashTable (256);
 	std::map <std::string, unsigned long> *conninode = new std::map <std::string, unsigned long>();
-	if (! addprocinfo ("/proc/net/tcp", conninode))
+	if (! addProcInfo ("/proc/net/tcp", conninode))
 	{
 		std::cout << "Error: couldn't open /proc/net/tcp\n";
 		exit(0);
 	}
 	return conninode;
-	//addprocinfo ("/proc/net/tcp6");
+	//addProcInfo ("/proc/net/tcp6");
 
 	//if (DEBUG)
 	//	reviewUnknown();

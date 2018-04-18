@@ -1,6 +1,43 @@
 #include "process.h"
 
 
+
+Process::Process(int pid) {
+		this->pid = pid;
+		this->inodes = getProcessSocketInode(this->pid);
+}
+
+Process::~Process() {
+		delete this->inodes;
+}
+
+
+bool Process::hasInode(long inode) {  //interface
+		std::set<long>::iterator it;
+		it = this->inodes->find(inode);
+		if (it == this->inodes->end()) {
+			return false;;
+		} else {
+			return true;
+		}
+}
+
+void Process::refershInodes() {  //interface
+		if (this->inodes != NULL) {
+			std::set<long>::iterator it = this->inodes->begin();
+			while (it != this->inodes->end()) {
+				this->inodes->erase(it);
+				it++;
+			}
+			this->inodes->clear();
+			delete this->inodes;
+			this->inodes = NULL;
+		}
+		this->inodes = getProcessSocketInode(this->pid);
+}
+
+
+
 bool Process::is_number (char * string) {
 	while (*string) {
 		if (!isdigit (*string))
@@ -20,6 +57,7 @@ unsigned long Process::str2ulong (char * ptr) {
 	}
 	return retval;
 }
+
 int Process::str2int (char * ptr) {
 	int retval = 0;
 
@@ -30,10 +68,6 @@ int Process::str2int (char * ptr) {
 	}
 	return retval;
 }
-
-
-
-
 
 
 std::set<long>* Process::getProcessSocketInode(long pid) {

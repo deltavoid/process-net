@@ -1,5 +1,31 @@
-
 #include "network_monitor.h"
+
+
+NetworkMonitor::NetworkMonitor(const char* dev, int time) {
+        this->device = dev;
+        this->time = time;
+		this->con = new Connection();
+		pthread_mutex_init(&pmutex, NULL);
+
+		dispatch(); //init
+}
+
+NetworkMonitor::~NetworkMonitor() {
+		size_t size = this->processs.size();
+		for (int i = 0; i< size; i++) {
+			Process *now = this->processs[i];
+			delete now;
+		}
+		delete this->con;
+	}
+
+void NetworkMonitor::refreshConnection() {
+		delete this->con;
+		this->con = new Connection();
+	}
+
+
+
 
 
 
@@ -51,7 +77,7 @@ void NetworkMonitor::removeProcess(int pid) {
 double NetworkMonitor::getProcessBandwidth(int pid)
 {
 	pthread_mutex_lock(&pmutex);
-	double out = -1;
+	double out = 0;
 	size_t size = this->processs.size();
     for (int i = 0; i< size; i++) {
         Process *now = this->processs[i];
@@ -114,7 +140,7 @@ void* NetworkMonitor::loop(void *arg){
 			app->removeProcess(pid);
 		}
 		app->res.clear();
-		app->refreshConnection();
+		app->con->refreshConnectionInode();
 	}
 }
 
@@ -189,6 +215,8 @@ void NetworkMonitor::dp_parse_tcp (const pcap_pkthdr * header, const u_char * pa
 
 	    long inode = this->con->getConnectionInode(this->info.ip_src, ntohs(tcp->source), this->info.ip_dst, ntohs(tcp->dest));
 		std::cout << "inode: " << inode << std::endl;
+		if  (inode == -1)  return ;
+
 		pthread_mutex_lock(&pmutex);
 		size_t size = this->processs.size();
 		for (int i = 0; i< size; i++) {
