@@ -12,6 +12,7 @@ void NetworkMonitor::dispatch() {
 		this->linkType = pcap_datalink(this->handle);
 
 		int err = pthread_create(&this->ptid, NULL, loop, this);
+
 }
 
 void NetworkMonitor::addProcess(int pid) {
@@ -186,8 +187,8 @@ void NetworkMonitor::dp_parse_ip (const pcap_pkthdr * header, const u_char * pac
 void NetworkMonitor::dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet){
 		struct tcphdr * tcp = (struct tcphdr *) packet;
 
-		unsigned long inode = this->con->getConnectionInode(this->info.ip_src, ntohs(tcp->source), this->info.ip_dst, ntohs(tcp->dest));
-		//std::cout << "inode: " << inode << std::endl;
+	    long inode = this->con->getConnectionInode(this->info.ip_src, ntohs(tcp->source), this->info.ip_dst, ntohs(tcp->dest));
+		std::cout << "inode: " << inode << std::endl;
 		pthread_mutex_lock(&pmutex);
 		size_t size = this->processs.size();
 		for (int i = 0; i< size; i++) {
