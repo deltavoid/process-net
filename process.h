@@ -100,10 +100,10 @@ public:
 	}
 
 
-	std::set<long>* getProcessSocketInode(long pid);
-    bool is_number (char * string);
-    unsigned long str2ulong (char * ptr);
-	int str2int (char * ptr);
+	static std::set<long>* getProcessSocketInode(long pid);
+    static bool is_number (char * string);
+    static unsigned long str2ulong (char * ptr);
+	static int str2int (char * ptr);
 
 
 

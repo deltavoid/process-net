@@ -6,15 +6,13 @@
 void NetworkMonitor::dispatch() {
 		char errbuff[PCAP_ERRBUF_SIZE];
 		//char *dev = pcap_lookupdev(errbuff);
-		//const char* dev = "enp179s0f1";
 		
 		this->handle = pcap_open_live(device.c_str(), BUFSIZ, 0, 1000, errbuff);
 
 		this->linkType = pcap_datalink(this->handle);
 
 		int err = pthread_create(&this->ptid, NULL, loop, this);
-
-	}
+}
 
 void NetworkMonitor::addProcess(int pid) {
 	pthread_mutex_lock(&pmutex);

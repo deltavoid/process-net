@@ -102,21 +102,22 @@ public:
 
 	void dp_parse_tcp (const pcap_pkthdr * header, const u_char * packet);
 
-	int time;
+	
 	std::string device;
+    int time;
+	
 	pcap_t *handle;
 	int linkType;
 	dpargs info;
 	pthread_t ptid;
-	long pid;
+
 	std::vector<Process*> processs;
 	std::vector<int> res;
 	pthread_mutex_t pmutex;
 	
 	Connection *con;
 	
-	
-	
+
 };
 
 
